@@ -1,0 +1,62 @@
+# TicTacToeAndroid
+package jrJava.tictactoefun;
+
+public class winCheck {
+
+	private int size;
+	private int required;
+
+	public winCheck(int _size, int _required){
+
+		size = _size;
+		required = _required;
+
+	}
+
+	public boolean check(int[][] marks, int i, int j){
+		
+		if(checkOneDirection(marks, i, j, 1,0) ||
+			checkOneDirection(marks, i, j, 0,1) ||
+			checkOneDirection(marks, i, j, 1,1) ||
+			checkOneDirection(marks, i, j,-1, 1)){
+			
+			return true;
+		}
+
+ 
+		return false;
+	}
+	
+	private boolean checkOneDirection(int[][] marks, int i , int j, int xIncrement, int yIncrement){
+
+		int xStart = i;
+		int yStart = j;
+		for(int m=0; m<required; m++){
+			xStart -= xIncrement;
+			yStart -= yIncrement;
+			if(xStart<0 || xStart>size-1 || yStart<0 || yStart>size-1){
+				xStart += xIncrement;
+				yStart += yIncrement;
+				break;
+			}
+		}
+		
+		for(int m=0; m<size; m++){
+			
+			int sum = 0;
+			for(int k=0; k<required; k++){
+				int x = xStart + k*xIncrement;
+				int y = yStart + k*yIncrement;
+				if(x>=size || y>=size || x<0 || y<0) return false;
+				
+				sum += marks[x][y];
+			}
+			if(sum==required || sum ==-required) return true;
+			
+		}
+		
+		return false;
+	}
+	
+	
+}
