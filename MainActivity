@@ -1,0 +1,142 @@
+package jrJava.tictactoefun;
+
+import java.util.StringTokenizer;
+
+import android.app.Activity;
+import android.graphics.Point;
+import android.os.Bundle;
+import android.view.Display;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnTouchListener;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.Button;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+public class MainActivity extends Activity implements OnTouchListener {
+
+	private int size = 7;
+	private int required = 4;
+	private Button[][] buttons;
+	private int[][] surrogate = new int[size][size];
+	private TextView text;
+	private int turn = 1; // 1: O's turn,  -1: X's turn
+	private boolean gameOver;
+	private winCheck winCheck;
+	
+
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		
+		winCheck = new winCheck(size, required);
+
+		Display display = getWindowManager().getDefaultDisplay();
+		Point dimension = new Point();
+		display.getSize(dimension);
+
+		int buttonDimen = Math.min(dimension.x, dimension.y)/size;
+
+
+		buttons = new Button[size][size];
+		RelativeLayout layout = new RelativeLayout(this);
+
+		for(int i=0; i<size; i++){
+			for(int j=0; j<size; j++){
+				RelativeLayout.LayoutParams param = 
+						new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+				param.leftMargin = buttonDimen*j;
+				param.topMargin = buttonDimen*i;
+				param.width = buttonDimen;
+				param.height = buttonDimen;
+
+				buttons[i][j] = new Button(this);
+				buttons[i][j].setLayoutParams(param);
+				buttons[i][j].setOnTouchListener(this);
+				buttons[i][j].setTag(i+","+j);
+				layout.addView(buttons[i][j]);
+			}
+		}
+
+		RelativeLayout.LayoutParams param = 
+				new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+		param.leftMargin = 50;
+		param.topMargin = buttonDimen*size + 50;
+		text = new TextView(this);
+		text.setLayoutParams(param);
+		text.setText("Messages here");
+		layout.addView(text);
+		
+		showWhoseTurn();
+		setContentView(layout);
+	}
+
+
+	
+	private void showWhoseTurn(){
+		if(turn>0) {
+			text.setText("Now, it's O's turn.");
+		}
+		else{
+			text.setText("Now, it's X's turn.");
+		}
+	}
+	
+	
+
+	public boolean onTouch(View v, MotionEvent e) {
+
+		if(gameOver) return true;
+		
+		Button selected = (Button) v;
+		String tag = (String) selected.getTag();
+		StringTokenizer st = new StringTokenizer(tag, ",");
+		int i = Integer.parseInt(st.nextToken());
+		int j = Integer.parseInt(st.nextToken());
+		
+		if(turn>0){
+			buttons[i][j].setText("O");
+			surrogate[i][j] = 1;
+		}
+		else {
+			buttons[i][j].setText("X");
+			surrogate[i][j] = -1;
+		}
+		
+		buttons[i][j].setEnabled(false);
+		
+		/*
+		// check the success.
+		if( Math.abs( surrogate[0][0]+surrogate[0][1]+surrogate[0][2] ) == 3 ||
+		    Math.abs( surrogate[1][0]+surrogate[1][1]+surrogate[1][2] ) == 3 ||
+		    Math.abs( surrogate[2][0]+surrogate[2][1]+surrogate[2][2] ) == 3 ||
+		    
+		    Math.abs( surrogate[0][0]+surrogate[1][0]+surrogate[2][0] ) == 3 ||	
+		    Math.abs( surrogate[0][1]+surrogate[1][1]+surrogate[2][1] ) == 3 ||
+		    Math.abs( surrogate[0][2]+surrogate[1][2]+surrogate[2][2] ) == 3 ||
+		    
+		    Math.abs( surrogate[0][0]+surrogate[1][1]+surrogate[2][2] ) == 3 ||
+		    Math.abs( surrogate[0][2]+surrogate[1][1]+surrogate[2][0] ) == 3 ){
+			*/
+		
+		if(winCheck.check(surrogate, i, j)){
+			gameOver = true;
+			if(turn>0){
+				text.setText("Game Over: O won !!!");
+			}
+			else{
+				text.setText("Game Over: X won !!!");
+			}
+			
+			return true;
+		}
+		
+		turn = -turn;
+		showWhoseTurn();
+		
+		return false;
+	}
+	
+}
